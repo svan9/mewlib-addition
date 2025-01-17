@@ -1,0 +1,23 @@
+## craft
+## Done features
+- [x] full screen
+- [x] drawing field
+- [x] drawing player
+- [x] support animation cell
+- [ ] dynamic block
+  - [ ] proccess
+  - [ ] dynamic state texture
+- [ ] UI
+  - [ ] dynamic block info
+  - [ ] floating window
+  - [ ] inventory
+  - [ ] escape menu
+  - [ ] base menu
+- [ ] Game Play
+  - [ ] crafting
+  - [ ] inventory
+  - [ ] breaking block
+  - [ ] puts block
+  - [ ] mining
+- [ ] Load & Save Map (mew::binary constructor)
+- [ ] Multiplayer
