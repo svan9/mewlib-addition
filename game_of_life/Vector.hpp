@@ -4,10 +4,10 @@
 #include "mewall.h"
 
 namespace mew::game {
-	template<template T, size_t size>
+	template<typename T, size_t size>
 	class Vector;
 
-	template<template T, size_t size>
+	template<typename T, size_t size>
 	class Vector<T, 2> {
 	public:
 		typedef Vector<T, 2> self_type;

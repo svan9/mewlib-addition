@@ -8,5 +8,7 @@ set(CMAKE_CXX_FLAGS "-ftree-parallelize-loops=4")
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 
 include_directories("${CMAKE_SOURCE_DIR}/mewlib")
-include_directories("${CMAKE_SOURCE_DIR}/include")
+add_subdirectory(raylib)
+# include_directories("${raylib_public_headers}")
 add_subdirectory(game_of_life)
+add_subdirectory(craft)

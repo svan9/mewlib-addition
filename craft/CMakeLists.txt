@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(game_of_life LANGUAGES CXX)
+project(craft LANGUAGES CXX)
 
 set(PROJECT_VERSION 1A00F)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -13,4 +13,12 @@ add_compile_options(-fpermissive)
 
 add_executable(${PROJECT_NAME} "./main.cpp")
 target_include_directories(${PROJECT_NAME} PUBLIC "./")
-target_link_libraries(${PROJECT_NAME} -static-libgcc -static-libstdc++)
+target_link_libraries(${PROJECT_NAME} raylib -static-libgcc -static-libstdc++)
+
+add_custom_command(
+	TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	"${CMAKE_SOURCE_DIR}/resources"
+	"${CMAKE_BINARY_DIR}/bin/resources"
+	COMMENT "Copy resources to binary"
+)
