@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 
 include_directories("${CMAKE_SOURCE_DIR}/mewlib")
 add_subdirectory(raylib)
+add_subdirectory(json)
 # include_directories("${raylib_public_headers}")
 add_subdirectory(game_of_life)
 add_subdirectory(craft)

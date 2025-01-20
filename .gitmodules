@@ -4,3 +4,6 @@
 [submodule "mewlib"]
 	path = mewlib
 	url = https://github.com/svan9/mewlib
+[submodule "json"]
+	path = json
+	url = https://github.com/nlohmann/json.git
