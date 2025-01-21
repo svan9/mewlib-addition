@@ -203,6 +203,7 @@ public:
 		clusters.back()->setSpeed(speed);
 		clusters.back()->spawn();
 	}
+	
 	void spawn(const char* name, vec2 target, Color color, float speed = 1.0f) {
 		auto _cluster = collection.find(name);
 		MewUserAssert(_cluster != collection.end(), "cannot find collection");

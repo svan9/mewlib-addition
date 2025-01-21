@@ -9,6 +9,8 @@
 #include <numeric>
 #include <cmath>
 #include <initializer_list>
+#include "data_set.hpp"
+#include "ui.hpp"
 
 using mew::vec2;
 
@@ -647,24 +649,34 @@ public:
 	}
 
 	void Update() {
-		if(IsKeyPressed(KEY_R)) {
-			clear();
+		const float time_interval = GetFrameTime();
+
+		if(IsKeyPressed(current_data_set->RELOAD_KEY)) {
+			current_data_set->load();
+			// clear();
 		}
+		body.mass = current_data_set->PLAYER_MASS;
 		float x_force = 25.0f;
 		float y_force = 25.0f;
-		if (IsKeyDown(KEY_D)) { /* right */
+		if (IsKeyDown(current_data_set->PLAYER_CLUTCH)) {
+			body.force.lerp((vec2){0.1f, 0.1f}, time_interval*10.0f);
+			current_data_set->states.show_slutch_message = true;
+		} else {
+			current_data_set->states.show_slutch_message = false;
+		}
+		if (IsKeyDown(current_data_set->PLAYER_MOVE_RIGHT)) { /* right */
 			body.force.x = -x_force;
 			body.setTargetRotation(90.0f);
 		}
-		if (IsKeyDown(KEY_A)) { /* left */
+		if (IsKeyDown(current_data_set->PLAYER_MOVE_LEFT)) { /* left */
 			body.force.x = x_force;
 			body.setTargetRotation(-90.0f);
 		}
-		if (IsKeyDown(KEY_W)) { /* front */
+		if (IsKeyDown(current_data_set->PLAYER_MOVE_FRONT)) { /* front */
 			body.force.y = y_force;
 			body.setTargetRotation(0.0f);
 		}
-		if (IsKeyDown(KEY_S)) { /* back */
+		if (IsKeyDown(current_data_set->PLAYER_MOVE_BACK)) { /* back */
 			body.force.y = -y_force;
 			body.setTargetRotation(180.0f);
 		}

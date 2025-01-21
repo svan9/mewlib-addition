@@ -3,6 +3,9 @@ extern "C" {
 }
 #include "mewall.h"
 #include "world.hpp"
+#include "data_set.hpp"
+#include "utilities.hpp"
+
 
 constexpr const uint _world_size = 256;
 World world(_world_size, _world_size);
@@ -26,7 +29,8 @@ int main(void) {
 /* upload textures */
 	GameStorage* storage = GetCurrentGameStorage();
 	ParticleSystem* floor_ps = GetParticleSystemFloor();
-
+	DataSet* data_set = getDataSet();
+	data_set->load();
 	ParticleCluster put_block_ps(32);
 	put_block_ps.produce((Color){ 0xcc, 0xcc, 0xcc, (byte)(0xFF*0.4f) }, 1.2f, 180.0f, 0.0f, 0.5f, 2.0f, 2.0f, 
 		(Rectangle){16,16,0,0}, (Rectangle){-4,-4,40,40});
@@ -47,14 +51,14 @@ int main(void) {
 /* end upload textures */
 	Player main_player(storage->getID("player"));
 	main_player.setBlock(storage->getID("empty2"));
-	world.createFloor(storage->getID("empty"));
-	// world.PutForNoiseLayer(
-	// 	{
-	// 		storage->getID("sand1"), storage->getID("sand2"),
-	// 		storage->getID("sand3"), storage->getID("sand4"), 
-	// 		storage->getID("sand5")
-	// 	}, { 1.0, 0.01, 0.01, 0.01, 0.01 }
-	// );
+	world.createFloor(storage->getID("sand1"));
+	world.PutForNoiseLayer(
+		{
+			storage->getID("sand1"), storage->getID("sand2"),
+			storage->getID("sand3"), storage->getID("sand4"), 
+			storage->getID("sand5")
+		}, { 1.0, 0.01, 0.01, 0.01, 0.01 }
+	);
 	world.createLayer();
 	world.StepLayerUp();
 	// SetTargetFPS(144);
@@ -88,6 +92,14 @@ int main(void) {
 				v2.x, v2.y), 5, 75, 20, WHITE);
 			DrawText(TextFormat("frame time: %.5f", GetFrameTime()*1000), 5, 95, 20, WHITE);
 			DrawText(main_player.body.toString(), 5, 115, 20, WHITE);
+			if (current_data_set->states.show_slutch_message) {
+				DrawText("WARN!! EMERGENCY BRAKING", GetScreenWidth(), GetScreenHeight(), 25, RED);
+			}
+			// {
+			// 	static char buffer[256] = {0};
+			// 	static bool text_focused = false;
+			// 	InputText(buffer, 256, &text_focused, 5, 5, 20, 100, 50, WHITE, BLACK);
+			// }
 		EndDrawing();
 		/* END DRAWING */
 		/* POS UPDATE */
