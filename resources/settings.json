@@ -116,5 +116,6 @@
   "PLAYER_MOVE_LEFT"    : "KEY_A",
   "PLAYER_MOVE_RIGHT"   : "KEY_D",
   "PLAYER_CLUTCH"       : "KEY_SPACE",
+  "INVENTORY_KEY"       : "KEY_E",
   "PLAYER_MASS"         : 0.1
 }

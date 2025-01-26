@@ -6,7 +6,6 @@ extern "C" {
 #include "mewall.h"
 #include <unordered_map>
 #include <vector>
-#include "data_set.hpp"
 #include "utilities.hpp"
 
 #pragma pack(push, 1)
@@ -28,6 +27,7 @@ struct Background {
   bool has_image = false;
   Color color = BLACK;
   Image image;
+  Texture2D texture;
 };
 
 enum struct DisplayStyle: byte {
@@ -40,11 +40,19 @@ enum struct FlexDirectionStyle: byte {
 
 struct SemiVec {
   bool has_percent = false;
-  Vector2 value;
+  float x;
+  float y;
+
+  static SemiVec fromPercent(Vector2 value) {
+    return (SemiVec){true, value.x, value.y};
+  }
+  static SemiVec fromValue(Vector2 value) {
+    return (SemiVec){false, value.x, value.y};
+  }
 
   Vector2 getAbsolute(Vector2 size) {
-    if (!has_percent) { return value; }
-    return (Vector2){value.x*size.x, value.y*size.y};
+    if (!has_percent) { return (Vector2){x, y}; }
+    return (Vector2){x*size.x, y*size.y};
   }
 };
 
@@ -66,6 +74,7 @@ struct ElementStyle {
   Alignment box_align = Alignment::MiddleLeft;
   Alignment text_align = Alignment::MiddleLeft;
   Color text_color = BLACK;
+  float font_size = 25;
   const char* text = nullptr;
   Background background;
   Border border;
@@ -74,6 +83,7 @@ struct ElementStyle {
   SemiVec position;
   SemiVec size;
   Margin margin;
+  bool disabled = false;
 
   bool hasText() {
     return text != nullptr;

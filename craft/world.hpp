@@ -11,6 +11,7 @@
 #include <initializer_list>
 #include "data_set.hpp"
 #include "ui.hpp"
+#include "inventory.hpp"
 
 using mew::vec2;
 
@@ -603,9 +604,20 @@ public:
 	CellID player_cell;
 	float x_speed = 400.0f;
 	float y_speed = 400.0f;
-	// mew::Lerp lx_speed;
-	// mew::Lerp ly_speed;
-	// mew::Lerp lrot;
+	const char* name;
+	Inventory inventory;
+
+	
+	Player(const char* name, CellID _player_cell) 
+		: player_cell(_player_cell), inventory(name), name(name) {
+		camera.rotation = 180.0f;
+		camera.zoom = 2.0f;
+		body.mass = 1.0f;
+		body.position = {0.0f, 0.0f};
+		body.velocity = {0.0f, 0.0f};
+		body.force    = {0.0f, 0.0f};
+	}
+
 
 	void setPostion(float x, float y) {
 		position.x = x;
@@ -628,18 +640,6 @@ public:
 
 	void setBlock(CellID idx) {
 		current_block = idx;
-	}
-
-	Player(CellID _player_cell) : player_cell(_player_cell) {
-		camera.rotation = 180.0f;
-		camera.zoom = 2.0f;
-		body.mass = 1.0f;
-		body.position = {0.0f, 0.0f};
-		body.velocity = {0.0f, 0.0f};
-		body.force    = {0.0f, 0.0f};
-		// lx_speed.start(position.x, position.x);
-		// ly_speed.start(position.y, position.y);
-		// lrot.start(0, 0);
 	}
 
 	void zoomit() {

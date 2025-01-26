@@ -49,7 +49,7 @@ int main(void) {
 	storage->upload("resources/images/sand4.png", "sand4", "sand4");
 	storage->upload("resources/images/sand5.png", "sand5", "sand5");
 /* end upload textures */
-	Player main_player(storage->getID("player"));
+	Player main_player("main_player", storage->getID("player"));
 	main_player.setBlock(storage->getID("empty2"));
 	world.createFloor(storage->getID("sand1"));
 	world.PutForNoiseLayer(

@@ -6,13 +6,16 @@ extern "C" {
 #include "mewall.h"
 #include <unordered_map>
 #include <vector>
-#include "data_set.hpp"
+#include "utilities.hpp"
 #include "style.hpp"
 
 class UI {
 public:
+	typedef void(*Proccessor)(UI&);
 	ElementStyle style;
 	std::vector<UI> children;
+	Proccessor onHover = nullptr;
+	Proccessor onClick = nullptr;
 	UI() {}
 
 	Rectangle getRect(Rectangle rect) {
@@ -20,10 +23,17 @@ public:
 	}
 
 	Rectangle getRectByScreen() {
-		return style.getAbsoluteRect((Rectangle){0,0, GetScreenWidth(), GetScreenHeight()});
+		return style.getAbsoluteRect((Rectangle){0,0, (float)GetScreenWidth(), (float)GetScreenHeight()});
 	}
 
 	void update() {
+		Rectangle _rect = getRectByScreen();
+		if (CheckCollisionPointRec(GetMousePosition(), _rect)) {
+			_onHover();
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+				_onClick();
+			}
+		}
 		for (auto& child: children) {
 			child.update();
 		}
@@ -52,6 +62,38 @@ public:
 			}
 			child.render(current_rect+(Vector2){_rect.x, _rect.y});
 		}
+		if (style.background.has_image) {
+			style.background.texture.width = _rect.width;
+			style.background.texture.height = _rect.height;
+			DrawTexture(style.background.texture, _rect.x, _rect.y, style.disabled ? GRAY: WHITE);
+		} else {
+			DrawRectangleRec(_rect, style.background.color);
+		}
+		if (style.text != nullptr) {
+			int width = MeasureText(style.text, style.font_size);
+			DrawText(style.text, _rect.x+(_rect.width/2)-(width/2), 
+				_rect.y+(_rect.height/2)-(style.font_size/2), style.font_size, style.text_color);
+		} 
+	}
+
+	void _onHover() {
+		if (style.disabled) return;
+		if (onHover!=nullptr) onHover(*this);
+		for (auto& child: children) {
+			child._onHover();
+		}
+	}
+
+	void _onClick() {
+		if (style.disabled) return;
+		if (onClick!=nullptr) onClick(*this);
+		for (auto& child: children) {
+			child._onClick();
+		}
+	}
+
+	void add(UI& ui) {
+		children.push_back(ui);
 	}
 };
 
@@ -85,6 +127,9 @@ public:
 
 	////////////////////////////////////////////////////////////
 	UI& get(const char* name) {
+		if (!has(name)) {
+			return create(name);
+		}
 		return cluster.at(name);
 	}
 	
@@ -124,6 +169,22 @@ public:
 		UI& __e = get(name);
 		__e.style.is_focus = false;
 	}
+
+	////////////////////////////////////////////////////////////
+	void update() {
+		for (auto& __e: cluster) {
+			__e.second.update();
+		}
+	}
+
+	////////////////////////////////////////////////////////////
+	void render() {
+		for (auto& __e: cluster) {
+			if (__e.second.style.is_show) {
+				__e.second.render((Rectangle){0,0, (float)GetScreenWidth(), (float)GetScreenHeight()});
+			}
+		}
+	}
 };
 
 UICluster* main_ui_cluster = nullptr;
@@ -133,6 +194,8 @@ UICluster* GetUICluster() {
 	}
 	return main_ui_cluster;
 }
+
+
 
 
 #endif

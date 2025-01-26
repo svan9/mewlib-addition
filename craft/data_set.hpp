@@ -11,8 +11,10 @@ using json = nlohmann::json;
 #pragma pack(push, 1)
 
 struct DataSetStates {
-	byte show_slutch_message: 1 = false;
-	byte ui_focused: 1 = false;
+	bool show_slutch_message: 1 = false;
+	bool ui_focused: 1 = false;
+	bool item_grab: 1 = false;
+	bool item_finish_grab: 1 = false;
 };
 
 #pragma pack(pop)
@@ -26,6 +28,7 @@ struct DataSet {
 	int PLAYER_MOVE_LEFT;
 	int PLAYER_MOVE_RIGHT;
 	int PLAYER_CLUTCH;
+	int INVENTORY_KEY;
 	float PLAYER_MASS;
 	
 	void load() {
@@ -38,6 +41,7 @@ struct DataSet {
 		std::string __PLAYER_MOVE_LEFT = data["PLAYER_MOVE_LEFT"].get<std::string>();
 		std::string __PLAYER_MOVE_RIGHT = data["PLAYER_MOVE_RIGHT"].get<std::string>();
 		std::string __PLAYER_CLUTCH = data["PLAYER_CLUTCH"].get<std::string>();
+		std::string __INVENTORY_KEY = data["INVENTORY_KEY"].get<std::string>();
 		// update key enum value
 		data.at(__RELOAD_KEY).get_to(RELOAD_KEY);
 		data.at(__PLAYER_MOVE_FRONT).get_to(PLAYER_MOVE_FRONT);
@@ -45,6 +49,7 @@ struct DataSet {
 		data.at(__PLAYER_MOVE_LEFT).get_to(PLAYER_MOVE_LEFT);
 		data.at(__PLAYER_MOVE_RIGHT).get_to(PLAYER_MOVE_RIGHT);
 		data.at(__PLAYER_CLUTCH).get_to(PLAYER_CLUTCH);
+		data.at(__INVENTORY_KEY).get_to(INVENTORY_KEY);
 		// numeric constant
 		data["PLAYER_MASS"].get_to(PLAYER_MASS);
 		f.close();
