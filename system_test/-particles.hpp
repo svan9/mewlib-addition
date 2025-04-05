@@ -192,7 +192,7 @@ public:
 				case ParticleAnimationType::Circle: {
 					if (elapsed_time >= current.start_time) {
 						current.live_time = elapsed_time;
-						current.position.lerp(current.target, delta_time*current.speed);
+						current.position.lerp(current.animation.circle, delta_time*current.speed);
 					}
 				} break;
 				default: MewUserAssert(false, "unsupported animation type");

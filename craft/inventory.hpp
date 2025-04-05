@@ -6,6 +6,8 @@
 
 #pragma pack(push, 1)
 
+struct Item;
+
 typedef void(*ItemProcessor)(Item&);
 
 struct Item {

@@ -43,6 +43,47 @@ void DrawCircleGradient(int centerX, int centerY, float radius, float inner_radi
 		}
 	rlEnd();
 }
+using mew::vec2;
+
+float GetRandomValue(float from, float to) {
+	return from + (to-from)*(float)GetRandomValue(0, INT_MAX) / INT_MAX;
+}
+
+struct Bound {
+	vec2 min, max;
+};
+
+vec2 getRandom(Bound min, Bound max) {
+	vec2 pos;
+	while (pos.x > max.min.x && pos.x < max.max.x)
+		pos.x = GetRandomValue(min.min.x, min.max.x);
+	while (pos.y > max.min.y && pos.y < max.max.y)
+		pos.y = GetRandomValue(min.min.y, min.max.y);
+	return pos;
+}
+
+vec2 getRandom(Bound b) {
+	vec2 pos;
+	pos.x = GetRandomValue(b.min.x, b.max.x);
+	pos.y = GetRandomValue(b.min.y, b.max.y);
+	return pos;
+}
+
+vec2 getRandom(Rectangle min_rect, Rectangle max_rect) {
+	return getRandom(
+		(Bound){(vec2){min_rect.x, min_rect.y}, 
+			(vec2){min_rect.x+min_rect.width, min_rect.y+min_rect.height}},
+		(Bound){(vec2){max_rect.x, max_rect.y}, 
+			(vec2){max_rect.x+max_rect.width, max_rect.y+max_rect.height}});
+}
+
+vec2 getRandom(Rectangle rect) {
+	return getRandom((Bound){
+		(vec2){rect.x, rect.y}, 
+		(vec2){rect.x+rect.width, rect.y+rect.height}});
+}
+
+
 
 // Vector2 operator+(const Vector2& v1, const Vector2& v2) {
 // 	return (Vector2){v1.x+v2.x, v1.y+v2.y};

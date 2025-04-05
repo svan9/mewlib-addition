@@ -8,6 +8,9 @@ extern "C" {
 #include "utilities.hpp"
 #include "geomentry.hpp"
 #include "ui.hpp"
+#include "particles.hpp"
+
+static const float cell_size = 32.0f;
 
 class Enemy {
 public:
@@ -121,7 +124,13 @@ public:
 	Vector2 selected_cell = {-1, -1};
 	bool down_cell_is_path = false;
 	Vector2 hover_cell;
-	Level(size_t width, size_t height): width(width), height(height) { }
+	byte** _temp_map;
+	Level(size_t width, size_t height): width(width), height(height) {
+		_temp_map = new byte*[width];
+		for (int i = 0; i < width; ++i) {
+			_temp_map[i] = new byte[height];
+		}
+	}
 
 	void spawnEnemy(float health, float money) {
 		Enemy enemy;
@@ -236,9 +245,12 @@ public:
 		width_factor = GetScreenWidth() / GetScreenHeight();
 		float real_cell_size = cell_size;
 
-		GameStorage* storage = GetCurrentGameStorage();
-		auto grass = storage->get("grass");
-		auto track = storage->get("track");
+		TextureAtlas* storage = GetCurrentTextureAtlas();
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				_temp_map[x][y] = 0;
+			}
+		}
 		// grass->texture.width = real_cell_size;
 		// grass->texture.height = real_cell_size;
 		// track->texture.width = real_cell_size;
@@ -246,7 +258,7 @@ public:
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
 				Vector2 position = (Vector2){x*real_cell_size, y*real_cell_size};
-				DrawTexture(grass->texture, position.x, position.y, WHITE);
+				storage->draw("grass", position);
 			}
 		}
 
@@ -260,15 +272,27 @@ public:
 			for (float j = 0; j < length; ++j) {
 				Vector2 position = Vector2Add(start, Vector2Scale(direction, j));
 				if (!(position.x < 0 || position.y < 0 || position.x >= width || position.y >= height)) {
-					DrawTexture(track->texture, position.x * real_cell_size, position.y * real_cell_size, WHITE);
+					// position.x *= real_cell_size;
+					// position.y *= real_cell_size;
+					_temp_map[(int)position.x][(int)position.y] = 1;
+					// storage->draw("track", position);
 				}
+			}
+		}
+
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				byte current = _temp_map[x][y];
+				mew::RoadType rt = mew::getRoadType(_temp_map, width, height, x, y);
+				const char* prefix = mew::rt_to_prefix(rt);
+				char* name = mew::string::join_str(1 == current? "track": "grass", prefix, "-");
+				storage->draw(name, (Vector2){x*real_cell_size, y*real_cell_size});
 			}
 		}
 
 		for (auto& tower: towers) {
 			if (tower.getName() != nullptr){
-				DrawTexture(storage->get(tower.getName())->texture, 
-					tower.position.x*real_cell_size, tower.position.y*real_cell_size, WHITE);
+				storage->draw(tower.getName(), tower.position*real_cell_size);
 			} else {
 				DrawRectangle(tower.position.x*real_cell_size, tower.position.y*real_cell_size, 
 					real_cell_size, real_cell_size, RED);
@@ -422,26 +446,60 @@ float upgrade_price = 50;
 int step_speed = 7;
 float move_speed = 0.05f;
 
+void DrawAddTower(Vector2 pos, Vector2 size, Color tint) {
+	TextureAtlas* storage = GetCurrentTextureAtlas();
+	storage->draw("add_tower", pos, size, tint);
+}
+void DrawAddRange(Vector2 pos, Vector2 size, Color tint) {
+	TextureAtlas* storage = GetCurrentTextureAtlas();
+	storage->draw("add_range", pos, size, tint);
+}
+void DrawUpgradeTower(Vector2 pos, Vector2 size, Color tint) {
+	TextureAtlas* storage = GetCurrentTextureAtlas();
+	storage->draw("upgrade_tower", pos, size, tint);
+}
+
 int main(void) {
 	InitWindow(800, 450, "tower of defense");
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
-	GameStorage* storage = GetCurrentGameStorage();
+	
+	TextureAtlas* storage = GetCurrentTextureAtlas();
+	storage->loadAtlas("resources/tof/tilemap.png", 32, 32);
 
-	storage->upload("resources/tof/grass.png", "grass", "grass");
-	storage->upload("resources/tof/grass2.png", "track", "track");
-	storage->upload("resources/tof/tower1.png", "tower1", "tower1");
-	storage->upload("resources/tof/tower2.png", "tower2", "tower2");
-	storage->upload("resources/tof/tower3.png", "tower3", "tower3");
+	storage->upload(1, 			"track-single");
+	storage->upload(2, 			"grass-single");
+
+
+	storage->upload(/*6, */2, 		"grass-top");
+	storage->upload(/*8+4, */2,		"grass-left");
+	storage->upload(/*8+8+5,*/2,  "grass-bottom");
+	storage->upload(/*8+8+6,*/2, 	"grass-right_top_corner");
+	storage->upload(/*8+8+6,*/2, 	"grass-left_bottom_corner", 	0,1);
+	storage->upload(/*8+8+6,*/2, 	"grass-left_top_corner", 			1,0);
+	storage->upload(/*8+8+6,*/2, 	"grass-right_bottom_corner", 	1,1);
+	storage->upload(/*8+8, */2,		"grass-right");
+
+
+	storage->upload(13,  		"track-veritcal");
+	storage->upload(14, 		"track-horizontal");
+	storage->upload(23, 		"track-right_top_corner");
+	storage->upload(23, 		"track-right_bottom_corner",	0,1);
+	storage->upload(23, 		"track-left_top_corner", 		  1,0);
+	storage->upload(23, 		"track-left_bottom_corner", 	1,1);
+	
+	storage->upload(3, 			"add_range");
+	storage->upload(4, 			"add_tower");
+	storage->upload(5, 			"upgrade_tower");
+	storage->upload(9, 			"tower1");
+	storage->upload(10, 		"tower2");
+	storage->upload(11, 		"tower3");
+	
 	GetLevelCurrent()->generatePath(3);
 	UI& tower = GetUI("tower");
 	tower.style.font_size = 20;
-	tower.style.background.has_image = true;
-	tower.style.background.image = LoadImage("resources/tof/add_tower.png");
-	tower.style.background.texture = LoadTextureFromImage(tower.style.background.image);
-	UnloadImage(tower.style.background.image);
+	tower.style.background = Background::fromAtlas(DrawAddTower);
 	tower.style.box_align = Alignment::TopRight;
 	tower.style.size = SemiVec::fromValue((Vector2){64.0f, 64.0f});
-	tower.style.background.color = ColorAlpha(BLACK, 0.5f);
 	tower.onHover = [](UI& ui) {
 		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
 	};
@@ -456,14 +514,10 @@ int main(void) {
 	UI& add_range = GetUI("add_range");
 	add_range.style.font_size = 20;
 	add_range.style.margin.top = 10;
-	add_range.style.background.has_image = true;
-	add_range.style.background.image = LoadImage("resources/tof/add_range.png");
-	add_range.style.background.texture = LoadTextureFromImage(add_range.style.background.image);
-	UnloadImage(add_range.style.background.image);
+	add_range.style.background = Background::fromAtlas(DrawAddRange);
 	add_range.style.box_align = Alignment::TopRight;
 	add_range.style.position = SemiVec::fromValue((Vector2){0.0f, 64.0f});
 	add_range.style.size = SemiVec::fromValue((Vector2){64.0f, 64.0f});
-	add_range.style.background.color = ColorAlpha(RED, 0.5f);
 	add_range.onHover = [](UI& ui) {
 		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
 	};
@@ -477,14 +531,10 @@ int main(void) {
 	UI& upgrade_tower = GetUI("upgrade_tower");
 	upgrade_tower.style.font_size = 20;
 	upgrade_tower.style.margin.top = 10*2;
-	upgrade_tower.style.background.has_image = true;
-	upgrade_tower.style.background.image = LoadImage("resources/tof/upgrade_tower.png");
-	upgrade_tower.style.background.texture = LoadTextureFromImage(upgrade_tower.style.background.image);
-	UnloadImage(upgrade_tower.style.background.image);
+	upgrade_tower.style.background = Background::fromAtlas(DrawUpgradeTower);
 	upgrade_tower.style.box_align = Alignment::TopRight;
 	upgrade_tower.style.position = SemiVec::fromValue((Vector2){0.0f, 64.0f*2});
 	upgrade_tower.style.size = SemiVec::fromValue((Vector2){64.0f, 64.0f});
-	upgrade_tower.style.background.color = ColorAlpha(RED, 0.5f);
 	upgrade_tower.onHover = [](UI& ui) {
 		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
 	};
@@ -494,13 +544,13 @@ int main(void) {
 		}
 	};
 	UI& end_menu = GetUI("end_menu");
-	end_menu.style.background.color = ColorAlpha(BLACK, 0.8f);
+	end_menu.style.background = Background::fromColor(ColorAlpha(BLACK, 0.8f));
 	end_menu.style.size = SemiVec::fromPercent((Vector2){1.0f, 1.0f});
 
 	UI& info = GetUI("info");
 	info.style.box_align = Alignment::TopRight;
 	info.style.size = SemiVec::fromPercent((Vector2){0.3f, 1.0f});
-	info.style.background.color = ColorAlpha(BLACK, 0.5f);
+	info.style.background = Background::fromColor(ColorAlpha(BLACK, 0.5f));
 	ShowUI("tower");
 	ShowUI("info");
 	ShowUI("add_range");
@@ -549,8 +599,6 @@ int main(void) {
 			), 5, 30, 20, LIME);
 		EndDrawing();
 	}
-	storage->clear();
-	delete storage;
 	CloseWindow();
 	return 0;
 }
